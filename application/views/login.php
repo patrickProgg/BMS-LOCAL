@@ -265,11 +265,11 @@
         transition: 0.3s;
     }
 
-    .form-control:focus {
+    /* .form-control:focus {
         border: 2px solid var(--bs-primary);
         var(--bs-primary);
         box-shadow: 0 0 12px rgba(5, 93, 226, 0.6);
-    }
+    } */
 
     .form-label {
         color: black;

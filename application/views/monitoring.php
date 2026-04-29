@@ -1539,8 +1539,8 @@
             data: { client_id: id },
             success: function (response) {
 
-                let ongoingFishCount = response.fish ? response.fish.filter(loan => loan.status === 'ongoing').length : 0;
-                let ongoingRiceCount = response.rice ? response.rice.filter(loan => loan.status === 'ongoing').length : 0;
+                let ongoingFishCount = response.fish ? response.fish.filter(loan => loan.status === 'ongoing' || loan.status === 'overdue').length : 0;
+                let ongoingRiceCount = response.rice ? response.rice.filter(loan => loan.status === 'ongoing' || loan.status === 'overdue').length : 0;
 
                 hasOngoingFish = ongoingFishCount > 0;
                 hasOngoingRice = ongoingRiceCount > 0;
@@ -1555,6 +1555,9 @@
 
                     globalFishStartDate = startDate;
                     globalFishEndDate = dueDate;
+
+                    // const date_now = new Date().toISOString().split('T')[0];
+                    const date_now = '2026-05-15';
 
                     $('.fish-btn').html(dateRange);
 
@@ -1591,11 +1594,9 @@
                         }
                     }
 
-                    $('#selected_fish_id').val(id);
-                    $('#selected_fish_start').val(startDate);
-                    $('#selected_fish_due').val(dueDate);
-                    $('#selected_fish_total').val(total_amt);
-                    $('#selected_fish_balance').val(balance);
+                    if (date_now > dueDate && status === "ongoing") {
+                        processDueDate(id, type = "fish", dueDate);
+                    }
 
                     let fishDetailsForDelete = [];
 
@@ -1672,7 +1673,6 @@
                                         fish_details: JSON.stringify(fishDetailsForDelete)
                                     },
                                     success: function (response) {
-                                        console.log(response);
 
                                         if (response.success) {
                                             Swal.fire(
@@ -1717,60 +1717,11 @@
 
                 function onRiceSelected(id, dateRange, startDate, dueDate, status, total_amt, balance, date_completed) {
 
-                    $('#deleteRice').click(function () {
-                        Swal.fire({
-                            title: 'Are you sure?',
-                            text: "You won't be able to revert this!",
-                            icon: 'warning',
-                            showCancelButton: true,
-                            confirmButtonColor: '#d33',
-                            cancelButtonColor: '#3085d6',
-                            confirmButtonText: 'Yes, delete it!',
-                            cancelButtonText: 'Cancel'
-                        }).then((result) => {
-                            if (result.isConfirmed) {
-                                $.ajax({
-                                    url: '<?php echo site_url('Monitoring_cont/delete_rice_loan_id'); ?>',
-                                    type: 'POST',
-                                    dataType: 'json',
-                                    data: { loan_id: id },
-                                    success: function (response) {
-                                        console.log(response);
-
-                                        if (response.success) {
-                                            Swal.fire(
-                                                'Deleted!',
-                                                'The credit has been deleted.',
-                                                'success'
-                                            ).then(() => {
-                                                openViewModal(
-                                                    globalClientId,
-                                                    $('#header_name').text(),
-                                                    $('#header_address').text(),
-                                                    $('#header_acc_no').text(),
-                                                    null,
-                                                    null,
-                                                    null
-                                                );
-
-                                                getLoanStatuses();
-                                            });
-                                        }
-                                    },
-                                    error: function () {
-                                        Swal.fire(
-                                            'Error!',
-                                            'Failed to delete the loan. Please try again.',
-                                            'error'
-                                        );
-                                    }
-                                });
-                            }
-                        });
-                    });
-
                     globalRiceStartDate = startDate;
                     globalRiceEndDate = dueDate;
+
+                    // const date_now = new Date().toISOString().split('T')[0];
+                    const date_now = '2026-07-15';
 
                     $('.rice-btn').html(dateRange);
 
@@ -1807,11 +1758,9 @@
                         }
                     }
 
-                    $('#selected_rice_id').val(id);
-                    $('#selected_rice_start').val(startDate);
-                    $('#selected_rice_due').val(dueDate);
-                    $('#selected_rice_total').val(total_amt);
-                    $('#selected_rice_balance').val(balance);
+                    if (date_now > dueDate && status === "ongoing") {
+                        processDueDate(id, type = "rice", dueDate);
+                    }
 
                     $.ajax({
                         url: '<?php echo site_url('Monitoring_cont/get_rice_loan_details'); ?>',
@@ -1864,6 +1813,57 @@
                         }
                     });
 
+                    $('#deleteRice').click(function () {
+                        Swal.fire({
+                            title: 'Are you sure?',
+                            text: "You won't be able to revert this!",
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonColor: '#d33',
+                            cancelButtonColor: '#3085d6',
+                            confirmButtonText: 'Yes, delete it!',
+                            cancelButtonText: 'Cancel'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                $.ajax({
+                                    url: '<?php echo site_url('Monitoring_cont/delete_rice_loan_id'); ?>',
+                                    type: 'POST',
+                                    dataType: 'json',
+                                    data: { loan_id: id },
+                                    success: function (response) {
+
+                                        if (response.success) {
+                                            Swal.fire(
+                                                'Deleted!',
+                                                'The credit has been deleted.',
+                                                'success'
+                                            ).then(() => {
+                                                openViewModal(
+                                                    globalClientId,
+                                                    $('#header_name').text(),
+                                                    $('#header_address').text(),
+                                                    $('#header_acc_no').text(),
+                                                    null,
+                                                    null,
+                                                    null
+                                                );
+
+                                                getLoanStatuses();
+                                            });
+                                        }
+                                    },
+                                    error: function () {
+                                        Swal.fire(
+                                            'Error!',
+                                            'Failed to delete the loan. Please try again.',
+                                            'error'
+                                        );
+                                    }
+                                });
+                            }
+                        });
+                    });
+
                 }
 
                 // Clear both dropdowns
@@ -1902,7 +1902,6 @@
                     // Auto-select ongoing fish if found
                     if (ongoingFish) {
                         $('.fish-btn').html(ongoingFish.range);
-                        // Call onFishSelected for auto-selected ongoing fish
                         onFishSelected(ongoingFish.id, ongoingFish.range, ongoingFish.date_added, ongoingFish.due_date, ongoingFish.status, ongoingFish.total_amt, ongoingFish.date_completed);
                     } else if (response.fish.length > 0) {
                         // If no ongoing, select the first one
@@ -1911,7 +1910,6 @@
                         var dueFormatted = formatDate(firstFish.due_date);
                         var dateRange = startFormatted + ' - ' + dueFormatted;
                         $('.fish-btn').html(dateRange);
-                        // Call onFishSelected for auto-selected first fish
                         onFishSelected(firstFish.id, dateRange, firstFish.date_added, firstFish.due_date, firstFish.status, firstFish.total_amt, firstFish.date_completed);
                     }
                 } else {
@@ -1998,7 +1996,118 @@
 
     }
 
+    function processDueDate(id, type, dueDate) {
+
+        let creditType = type === 'fish' ? 'Dried Fish' : 'Rice';
+
+        Swal.fire({
+            title: creditType + ' Credit is Overdue!',
+            html: `
+                <div style="text-align: left;">
+                    <p>Due Date: <span class="text-danger">${formatDate(dueDate)}</span></p>
+                    <hr>
+                    <p>Would you like to extend the due date by 15 days?</p>
+                </div>
+            `,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, Extend Due Date',
+            cancelButtonText: 'No, Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Show loading
+                Swal.fire({
+                    title: 'Processing...',
+                    text: 'Extending due date',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                // Proceed with due date update
+                $.ajax({
+                    url: '<?php echo site_url('Monitoring_cont/update_due_date'); ?>',
+                    type: 'POST',
+                    dataType: 'json',
+                    data: {
+                        loan_id: id,
+                        type: type,
+                    },
+                    success: function (response) {
+                        Swal.close();
+
+                        if (response.success) {
+                            finalDueDate = response.new_due_date;
+
+                            newStatus = "overdue";
+
+                            if (type === "fish") {
+                                globalFishEndDate = finalDueDate;
+
+                                $('.fish-due-date').text(formatDate(finalDueDate));
+
+                                var statusLower = newStatus.toLowerCase();
+                                var statusUpper = newStatus.toUpperCase();
+                                $('.fish-status').removeClass('text-success text-danger text-primary');
+
+                                $('.fish-status').addClass('text-danger');
+                                $('.fish-status').text(statusUpper);
+
+                                getLoanStatuses();
+
+                                getPaymentHistoryFish(id, globalFishStartDate, globalFishEndDate);
+                            } else {
+                                globalRiceEndDate = finalDueDate;
+                                $('.rice-due-date').text(formatDate(finalDueDate));
+
+                                var statusLower = newStatus.toLowerCase();
+                                var statusUpper = newStatus.toUpperCase();
+                                $('.rice-status').removeClass('text-success text-danger text-primary');
+
+                                $('.rice-status').addClass('text-danger');
+                                $('.rice-status').text(statusUpper);
+
+                                getLoanStatuses();
+
+                                getPaymentHistoryRice(id, globalRiceStartDate, globalRiceEndDate);
+                            }
+
+
+                            // Show success message
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Due Date Extended!',
+                                text: `New due date: ${formatDate(finalDueDate)}`,
+                                timer: 3000,
+                                showConfirmButton: false
+                            });
+                        } else {
+                            Swal.fire('Error', response.message || 'Failed to extend due date', 'error');
+                        }
+                    },
+                    error: function (xhr) {
+                        Swal.close();
+                        console.error('AJAX Error:', xhr);
+                        Swal.fire('Error', 'Something went wrong', 'error');
+                    }
+                });
+            } else {
+                // User cancelled, just show warning
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Loan Still Overdue',
+                    text: 'Please process payment or extend the due date.',
+                    confirmButtonText: 'OK'
+                });
+            }
+        });
+    }
+
     function getPaymentHistoryFish(id, startDate, dueDate, callback, newPaymentAmount = 0) {
+
         let start = new Date(startDate);
         let end = new Date(dueDate);
 
@@ -2861,6 +2970,12 @@
             const fullname = $('#header_name').text();
             const address = $('#header_address').text();
 
+            const fish_due = $('.fish-due-date').text();
+            const formattedDateFish = new Date(fish_due).toISOString().split('T')[0];
+
+            const rice_due = $('.rice-due-date').text();
+            const formattedDateRice = new Date(rice_due).toISOString().split('T')[0];
+
             const fish_running_bal = $('.fish-running-balance').text();
             const rice_running_bal = $('.rice-running-balance').text();
 
@@ -2882,16 +2997,6 @@
                 balanceAmount = parseFloat(rice_running_bal.replace(/,/g, ''));
                 status = $('.rice-status').text();
             }
-
-            // if (isNaN(paymentAmount) || paymentAmount <= 0) {
-            //     Swal.fire('Error', 'Please enter a valid payment amount', 'error');
-            //     return;
-            // }
-
-            // if (paymentAmount > balanceAmount) {
-            //     Swal.fire('Error', 'Payment cannot exceed running balance of ₱ ' + formatMoney(balanceAmount), 'error');
-            //     return;
-            // }
 
             // Get date from the row
             let row = input.closest('tr');
@@ -2933,6 +3038,14 @@
                 confirmButtonText: 'Confirm Payment',
                 cancelButtonText: 'Cancel',
                 confirmButtonColor: '#3085d6',
+                didOpen: () => {
+                    document.addEventListener('keydown', function (e) {
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            Swal.clickConfirm();
+                        }
+                    }, { once: true });
+                },
                 preConfirm: () => {
                     const selectedDate = document.getElementById('swal_payment_date').value;
                     if (!selectedDate) {
@@ -2982,7 +3095,23 @@
                                 input.addClass('text-success');
 
                                 // Refresh the view
-                                refreshLoanViewAfterPayment(loan_id, paymentType);
+                                // refreshLoanViewAfterPayment(loan_id, paymentType);
+
+                                if (paymentType === "fish") {
+
+                                    const date_now = '2026-07-29';
+
+                                    if (date_now > formattedDateFish) {
+                                        processDueDate(loan_id, type = "fish", fish_due);
+                                    }
+
+                                } else {
+                                    const date_now = '2026-07-15';
+
+                                    if (date_now > formattedDateRice) {
+                                        processDueDate(loan_id, type = "rice", rice_due);
+                                    }
+                                }
 
                                 updateTotalPaidDisplay(paymentAmount, paymentType, loan_id, payment_for, status);
 
@@ -3033,7 +3162,7 @@
             data: { loan_id: loan_id },
             success: function (response) {
                 if (response.success) {
-                    getPaymentHistoryFish(loan_id, response.date_added, response.due_date);
+                    getPaymentHistoryFish(loan_id, globalFishStartDate, globalFishEndDate);
                 }
             }
         });
@@ -3161,6 +3290,9 @@
     });
 
     function getLoanStatuses() {
+
+        const date_now = new Date().toISOString().split('T')[0];
+
         $.ajax({
             url: "<?php echo base_url('Monitoring_cont/get_loan_statuses'); ?>",
             type: "POST",
@@ -3170,9 +3302,8 @@
             },
             success: function (res) {
 
-                let hasOngoingFish = res.fish_loans && res.fish_loans.some(loan => loan.status === 'ongoing');
-
-                let hasOngoingRice = res.rice_loans && res.rice_loans.some(loan => loan.status === 'ongoing');
+                let hasOngoingFish = res.fish_loans && res.fish_loans.some(loan => loan.status === 'ongoing' || loan.status === 'overdue');
+                let hasOngoingRice = res.rice_loans && res.rice_loans.some(loan => loan.status === 'ongoing' || loan.status === 'overdue');
 
                 if (hasOngoingFish) {
                     $('#addNewLoanFish').hide();
@@ -3189,6 +3320,42 @@
             }
         });
     }
+
+    // function processDueCredits(id, type) {
+    //     $.ajax({
+    //         url: '<?php echo site_url('Monitoring_cont/update_due_date_fish'); ?>',
+    //         type: 'POST',
+    //         dataType: 'json',
+    //         data: { loan_id: id },
+    //         success: function (response) {
+    //             Swal.close();
+
+    //             console.log('Full response:', response);
+
+    //             if (!response) {
+    //                 Swal.fire('Error', 'No data received', 'error');
+    //                 return;
+    //             }
+
+    //             const fishCount = response.fish_data ? response.fish_data.length : 0;
+    //             const riceCount = response.rice_data ? response.rice_data.length : 0;
+
+    //             $('#fish_count_badge').text(fishCount);
+    //             $('#rice_count_badge').text(riceCount);
+    //             $('#total_clients_count').text(fishCount + riceCount);
+
+    //             populateFishBulkTable(response.fish_data || []);
+    //             populateRiceBulkTable(response.rice_data || []);
+
+    //             $('#bulk_payment_modal').modal('show');
+    //         },
+    //         error: function (xhr) {
+    //             Swal.close();
+    //             console.error('AJAX Error:', xhr);
+    //             Swal.fire('Error', 'Something went wrong', 'error');
+    //         }
+    //     });
+    // }
 
     let bulkPaymentData = {
         selected_date: null,
@@ -3222,8 +3389,6 @@
             data: { date: date },
             success: function (response) {
                 Swal.close();
-
-                console.log('Full response:', response);
 
                 if (!response) {
                     Swal.fire('Error', 'No data received', 'error');

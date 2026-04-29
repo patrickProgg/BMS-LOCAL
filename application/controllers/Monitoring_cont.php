@@ -2514,6 +2514,74 @@ class Monitoring_cont extends CI_Controller
         echo json_encode($query->result());
     }
 
+    public function update_due_date()
+    {
+        $id = $this->input->post('loan_id');
+        $type = $this->input->post('type'); // 'fish' or 'rice'
+
+        // Get current due_date based on type
+        if ($type == 'rice') {
+            $this->db->select('due_date');
+            $this->db->from('tbl_rice_transaction');
+            $this->db->where('id', $id);
+            $query = $this->db->get();
+            $loan = $query->row();
+
+            if ($loan) {
+                // New due_date = current due_date + 15 days
+                $new_due_date = date('Y-m-d', strtotime($loan->due_date . ' + 30 days'));
+
+                // Update the due_date and status
+                $this->db->where('id', $id);
+                $this->db->update('tbl_rice_transaction', [
+                    'due_date' => $new_due_date,
+                    'status' => 'overdue'
+                ]);
+
+                echo json_encode([
+                    'success' => true,
+                    'message' => 'Rice due date extended by 15 days',
+                    'new_due_date' => $new_due_date
+                ]);
+            } else {
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'Rice loan not found'
+                ]);
+            }
+        } else {
+            // Default to fish
+            $this->db->select('due_date');
+            $this->db->from('tbl_fish_transaction');
+            $this->db->where('id', $id);
+            $query = $this->db->get();
+            $loan = $query->row();
+
+            if ($loan) {
+                // New due_date = current due_date + 15 days
+                $new_due_date = date('Y-m-d', strtotime($loan->due_date . ' + 15 days'));
+
+                // Update the due_date and status
+                $this->db->where('id', $id);
+                $this->db->update('tbl_fish_transaction', [
+                    'due_date' => $new_due_date,
+                    'status' => 'overdue'
+                ]);
+
+                echo json_encode([
+                    'success' => true,
+                    'message' => 'Fish due date extended by 15 days',
+                    'new_due_date' => $new_due_date
+                ]);
+            } else {
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'Fish loan not found'
+                ]);
+            }
+        }
+    }
+
     public function save_dried_fish_loan()
     {
         $client_id = $this->input->post('client_id');
@@ -2654,6 +2722,11 @@ class Monitoring_cont extends CI_Controller
         $status = $this->input->post('status');
 
         if ($status === 'completed') {
+            $data = [
+                'status' => 'completed',
+                'date_completed' => date('Y-m-d')
+            ];
+        } else if ($status === 'overdue') {
             $data = [
                 'status' => 'completed',
                 'date_completed' => date('Y-m-d')

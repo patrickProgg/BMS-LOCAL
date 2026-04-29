@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>MONITORING</title>
+    <title>BMS-LOCAL</title>
     <link rel="shortcut icon" href="<?= base_url(); ?>assets/images/loan.png" />
 
     <link href="<?php echo base_url(); ?>assets/css/bootstrap.min.css" rel="stylesheet" />
