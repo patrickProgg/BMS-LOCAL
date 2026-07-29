@@ -1556,8 +1556,8 @@
                     globalFishStartDate = startDate;
                     globalFishEndDate = dueDate;
 
-                    // const date_now = new Date().toISOString().split('T')[0];
-                    const date_now = '2026-05-15';
+                    const date_now = new Date().toISOString().split('T')[0];
+                    // const date_now = '2026-05-15';
 
                     $('.fish-btn').html(dateRange);
 
@@ -1720,8 +1720,8 @@
                     globalRiceStartDate = startDate;
                     globalRiceEndDate = dueDate;
 
-                    // const date_now = new Date().toISOString().split('T')[0];
-                    const date_now = '2026-07-15';
+                    const date_now = new Date().toISOString().split('T')[0];
+                    // const date_now = '2026-07-15';
 
                     $('.rice-btn').html(dateRange);
 
@@ -3094,20 +3094,16 @@
                                 input.prop('readonly', true);
                                 input.addClass('text-success');
 
+                                const date_now = new Date().toISOString().split('T')[0];
+
                                 // Refresh the view
                                 // refreshLoanViewAfterPayment(loan_id, paymentType);
 
                                 if (paymentType === "fish") {
-
-                                    const date_now = '2026-07-29';
-
                                     if (date_now > formattedDateFish) {
                                         processDueDate(loan_id, type = "fish", fish_due);
                                     }
-
                                 } else {
-                                    const date_now = '2026-07-15';
-
                                     if (date_now > formattedDateRice) {
                                         processDueDate(loan_id, type = "rice", rice_due);
                                     }
@@ -3990,4 +3986,70 @@
     $('#addVarianceModal').on('hidden.bs.modal', function () {
         resetVarianceForm();
     });
+
+    function resetModalFields() {
+        // Clear client info
+        $('#header_acc_no').text('');
+        $('#header_name').text('');
+        $('#header_address').text('');
+        $('#header_id').val('');
+        $('#header_loan_id').val('');
+
+        // Clear fish fields
+        $('.fish-start-date').text('');
+        $('.fish-due-date').text('');
+        $('.fish-total-amt').text('');
+        $('.fish-running-balance').text('');
+        $('.fish-status').text('');
+        $('.fish-transactions-body').empty();
+        $('#fishPaymentTableBody').empty();
+        $('#fish_total_payment').text('0.00');
+        $('.fish-btn').text('Select Date Range');
+
+        // Clear rice fields
+        $('.rice-start-date').text('');
+        $('.rice-due-date').text('');
+        $('.rice-total-amt').text('');
+        $('.rice-running-balance').text('');
+        $('.rice-status').text('');
+        $('.rice-transactions-body').empty();
+        $('#ricePaymentTableBody').empty();
+        $('#rice_total_payment').text('0.00');
+        $('.rice-btn').text('Select Date Range');
+
+        // Clear dropdowns
+        $('.fish-dropdown').empty();
+        $('.fish-dropdown').append('<li><a class="dropdown-item" href="#">Select Date</a></li>');
+        $('.rice-dropdown').empty();
+        $('.rice-dropdown').append('<li><a class="dropdown-item" href="#">Select Date</a></li>');
+
+        // Reset tab to fish
+        $('#current_loan_type').val('fish');
+        $('#view-fish-tab').show();
+        $('#view-rice-tab').hide();
+        $('.tab-link').removeClass('active');
+        $('[data-tab="view-fish"]').addClass('active');
+
+        // Clear any error states
+        $('.is-invalid').removeClass('is-invalid');
+        $('.error-message').hide();
+
+        // Reset any hidden fields
+        $('#selected_date_id').val('');
+        $('#header_loan_id').val('');
+    }
+
+    $(document).ready(function () {
+        // Reset when modal is about to show (clean start)
+        $('#viewLoaner').on('show.bs.modal', function () {
+            resetModalFields();
+        });
+
+        // Reset when modal is hidden (cleanup)
+        $('#viewLoaner').on('hidden.bs.modal', function () {
+            resetModalFields();
+        });
+    });
+
+
 </script>

@@ -1802,7 +1802,9 @@ class Monitoring_cont extends CI_Controller
         $this->db->from('tbl_fish_transaction as a');
         $this->db->join('tbl_client as b', 'b.id = a.cl_id');
         $this->db->where('a.status', 'ongoing');
-        $this->db->where("'$previous_date' BETWEEN a.date_added AND a.due_date", NULL, FALSE);
+        // $this->db->where("'$previous_date' BETWEEN a.date_added AND a.due_date", NULL, FALSE);
+        $this->db->where("'$date' >= DATE_ADD(a.date_added, INTERVAL 1 DAY)", NULL, FALSE);
+        $this->db->where("'$date' <= a.due_date", NULL, FALSE);
         $this->db->where('b.status !=', '1');
         $this->db->order_by('b.acc_no', 'ASC');
         $this->db->group_by('a.id');
@@ -1842,7 +1844,9 @@ class Monitoring_cont extends CI_Controller
         $this->db->from('tbl_rice_transaction as a');
         $this->db->join('tbl_client as b', 'b.id = a.cl_id');
         $this->db->where('a.status', 'ongoing');
-        $this->db->where("'$previous_date' BETWEEN a.date_added AND a.due_date", NULL, FALSE);
+        // $this->db->where("'$previous_date' BETWEEN a.date_added AND a.due_date", NULL, FALSE);
+        $this->db->where("'$date' >= DATE_ADD(a.date_added, INTERVAL 1 DAY)", NULL, FALSE);
+        $this->db->where("'$date' <= a.due_date", NULL, FALSE);
         $this->db->where('b.status !=', '1');
         $this->db->order_by('b.acc_no', 'ASC');
         $this->db->group_by('a.id');
@@ -2534,8 +2538,7 @@ class Monitoring_cont extends CI_Controller
                 // Update the due_date and status
                 $this->db->where('id', $id);
                 $this->db->update('tbl_rice_transaction', [
-                    'due_date' => $new_due_date,
-                    'status' => 'overdue'
+                    'due_date' => $new_due_date
                 ]);
 
                 echo json_encode([
@@ -2564,8 +2567,7 @@ class Monitoring_cont extends CI_Controller
                 // Update the due_date and status
                 $this->db->where('id', $id);
                 $this->db->update('tbl_fish_transaction', [
-                    'due_date' => $new_due_date,
-                    'status' => 'overdue'
+                    'due_date' => $new_due_date
                 ]);
 
                 echo json_encode([
